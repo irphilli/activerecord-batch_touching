@@ -15,7 +15,6 @@ Gem::Specification.new do |spec|
 
   spec.files         = Dir["LICENSE", "lib/**/*"] # TODO: Add README
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
   spec.add_dependency             "activerecord", ">= 6"
