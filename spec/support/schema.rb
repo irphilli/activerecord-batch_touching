@@ -37,5 +37,4 @@ ActiveRecord::Schema.define do
     t.integer :user_id
     t.timestamps null: false
   end
-
 end

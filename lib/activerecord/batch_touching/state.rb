@@ -1,7 +1,6 @@
 module ActiveRecord
   # = Active Record Batch Touching
   module BatchTouching
-
     # Tracking of the touch state. This class has no class-level data, so you can
     # store per-thread instances in thread-local variables.
     class State # :nodoc:

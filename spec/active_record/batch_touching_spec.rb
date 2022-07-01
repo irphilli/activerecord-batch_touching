@@ -140,7 +140,6 @@ describe Activerecord::BatchTouching do
 
     expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at"] } },
                     { "owners" => { ids: owner2, columns: ["updated_at"] } }] do
-
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
         owner2.touch
@@ -151,7 +150,6 @@ describe Activerecord::BatchTouching do
   it "can update multiple nonstandard columns of a single record in different calls to touch" do
     expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at"] } },
                     { "owners" => { ids: owner, columns: ["updated_at", "sad_at"] } }] do
-
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
         owner.touch :sad_at
@@ -160,8 +158,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "can update multiple nonstandard columns of a single record in a single call to touch" do
-    expect_updates [{ "owners" => { ids: owner, columns: [ "updated_at", "happy_at", "sad_at"] } }] do
-
+    expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at", "sad_at"] } }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at, :sad_at
       end
@@ -385,6 +382,6 @@ describe Activerecord::BatchTouching do
   end
 
   def touch_sql(table, columns, ids)
-    %{UPDATE \\"#{table}"\\ SET #{columns.map { |column| %{\\"#{column}\\" =.+} }.join(", ") } .+#{ids_sql(ids)}\\Z}
+    %{UPDATE \\"#{table}"\\ SET #{columns.map { |column| %{\\"#{column}\\" =.+} }.join(", ")} .+#{ids_sql(ids)}\\Z}
   end
 end
