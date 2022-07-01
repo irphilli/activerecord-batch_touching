@@ -340,7 +340,7 @@ describe Activerecord::BatchTouching do
   def expect_updates(tables_ids_and_columns)
     expected_sql = expected_sql_for(tables_ids_and_columns)
     expect(ActiveRecord::Base.connection).to receive(:update).exactly(expected_sql.length).times do |stmt, _, _|
-      if stmt.to_sql =~ /UPDATE /i
+      if /UPDATE /i.match?(stmt.to_sql)
         index = expected_sql.index { |expected_stmt| stmt.to_sql =~ expected_stmt }
         expect(index).to be, "An unexpected touch occurred: #{stmt.to_sql}"
         expected_sql.delete_at(index)

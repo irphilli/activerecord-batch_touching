@@ -18,12 +18,6 @@ Metrics/MethodLength:
 
 # Offense count: 1
 # This cop supports safe autocorrection (--autocorrect).
-Performance/RegexpMatch:
-  Exclude:
-    - 'spec/active_record/batch_touching_spec.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
 RSpec/BeEq:
   Exclude:
     - 'spec/active_record/batch_touching_spec.rb'
