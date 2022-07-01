@@ -317,6 +317,14 @@ describe Activerecord::BatchTouching do
     expect(car2.reload.lock_version).to equal(3)
   end
 
+  # it "can be disabled and enabled globally" do
+  #
+  # end
+  #
+  # it "can be disabled within a block" do
+  #
+  # end
+
   context 'dependent deletes' do
     let!(:post) { Post.create }
     let!(:user) { User.create }

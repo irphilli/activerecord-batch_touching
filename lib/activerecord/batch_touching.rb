@@ -55,6 +55,28 @@ module ActiveRecord
     end
 
     class << self
+      # Disable batch touching globally
+      def disable!
+        @disabled = true
+      end
+
+      # Enable batch touching globally
+      def enable!
+        @disabled = false
+      end
+
+      # Disable batch touching for a block
+      def disable
+        Thread.current[:batch_touching_disabled] = false
+        yield
+      ensure
+        Thread.current[:batch_touching_disabled] = false
+      end
+
+      def disabled?
+        Thread.current[:batch_touching_disabled] || @disabled
+      end
+
       def states
         Thread.current[:batch_touching_states] ||= []
       end
@@ -66,7 +88,7 @@ module ActiveRecord
       delegate :add_record, to: :current_state
 
       def batch_touching?
-        states.present?
+        states.present? && !disabled?
       end
 
       # Start batching all touches. When done, apply them. (Unless nested.)
