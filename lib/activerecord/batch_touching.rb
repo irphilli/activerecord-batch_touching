@@ -87,13 +87,28 @@ module ActiveRecord
 
       # Apply the touches that were batched. We're in a transaction already so there's no need to open one.
       def apply_touches
+        callbacks_run = Set.new
+        all_states = State.new
         while current_state.more_records?
-          current_state.get_and_clear_records.each do |(klass, columns), records|
-            touch_records klass, columns, records
+          all_states.merge!(current_state)
+          state_records = current_state.records
+          current_state.clear_records!
+          state_records.each do |_, records|
+            # Run callbacks to collect more touches (i.e. touch: true for associations)
+            records.each do |record|
+              unless callbacks_run.include?(record)
+                record._run_touch_callbacks
+                callbacks_run.add(record)
+              end
+            end
           end
         end
-      ensure
-        current_state.clear_already_touched_records
+
+        # Sort by class name. Having a consistent order can help mitigate deadlocks.
+        sorted_records = all_states.records.keys.sort_by { |k| k.first.name }.map { |k| [k, all_states.records[k]] }.to_h
+        sorted_records.each do |(klass, columns), records|
+          touch_records klass, columns, records
+        end
       end
 
       # Touch the specified records--non-empty set of instances of the same class.
@@ -117,9 +132,6 @@ module ActiveRecord
 
           klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, current_time: current_time])
         end
-
-        current_state.touched klass, columns, records
-        records.each(&:_run_touch_callbacks)
       end
     end
   end

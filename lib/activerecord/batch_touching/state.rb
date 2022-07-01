@@ -5,15 +5,6 @@ module ActiveRecord
     # Tracking of the touch state. This class has no class-level data, so you can
     # store per-thread instances in thread-local variables.
     class State # :nodoc:
-      def initialize
-        @records = Hash.new { Set.new }
-        @already_touched_records = Hash.new { Set.new }
-      end
-
-      def touched(klass, columns, records)
-        @already_touched_records[[klass, columns]] += records
-      end
-
       # Return the records grouped by class and columns that were touched:
       #
       #   {
@@ -22,11 +13,14 @@ module ActiveRecord
       #     [Pet,   [:updated_at]]               => Set.new([pet2])
       #   }
       #
-      # As a side-effect, clears out the list of records.
-      def get_and_clear_records
-        records = @records
+      attr_reader :records
+
+      def initialize
         @records = Hash.new { Set.new }
-        records
+      end
+
+      def clear_records!
+        @records = Hash.new { Set.new }
       end
 
       def more_records?
@@ -39,21 +33,15 @@ module ActiveRecord
         columns = columns.map(&:to_sym).sort
 
         key = [record.class, columns]
-        @records[key] += [record] unless @already_touched_records[key].include?(record)
-      end
-
-      def clear_already_touched_records
-        @already_touched_records.clear
+        @records[key] += [record]
       end
 
       # Merge another state into this one
       def merge!(other_state)
         merge_records!(@records, other_state.records)
-        merge_records!(@already_touched_records, other_state.already_touched_records)
       end
 
       protected
-      attr_reader :records, :already_touched_records
 
       # Merge from_records into into_records
       def merge_records!(into_records, from_records)
