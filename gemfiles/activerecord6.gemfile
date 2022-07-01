@@ -1,5 +1,7 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-gem 'activerecord', '~> 6.1'
+source "https://rubygems.org"
 
-gemspec path: '../'
+gem "activerecord", "~> 6.1"
+
+gemspec path: "../"

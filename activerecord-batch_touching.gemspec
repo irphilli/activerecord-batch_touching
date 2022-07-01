@@ -1,16 +1,16 @@
-# coding: utf-8
+# frozen_string_literal: true
 
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path("lib", __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'activerecord/batch_touching/version'
+require "activerecord/batch_touching/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "activerecord-batch_touching"
   spec.version       = "1.0-beta4" # Activerecord::BatchTouching::VERSION
   spec.authors       = ["Brian Morearty", "Phil Phillips"]
   spec.email         = ["phil@productplan.com"]
-  spec.summary       = %q{Batch up your ActiveRecord "touch" operations for better performance.}
-  spec.description   = %q{Batch up your ActiveRecord "touch" operations for better performance. All accumulated "touch" calls will be consolidated into as few database round trips as possible.}
+  spec.summary       = 'Batch up your ActiveRecord "touch" operations for better performance.'
+  spec.description   = 'Batch up your ActiveRecord "touch" operations for better performance. All accumulated "touch" calls will be consolidated into as few database round trips as possible.'
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -32,6 +32,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "timecop"
 
-  spec.metadata['rubygems_mfa_required'] = 'true'
-  spec.required_ruby_version = '>= 2.7.0'
+  spec.metadata["rubygems_mfa_required"] = "true"
+  spec.required_ruby_version = ">= 2.7.0"
 end

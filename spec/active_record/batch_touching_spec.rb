@@ -1,4 +1,6 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require "spec_helper"
 
 describe Activerecord::BatchTouching do
   let!(:owner) { Owner.create name: "Rosey" }
@@ -6,7 +8,7 @@ describe Activerecord::BatchTouching do
   let!(:pet2) { Pet.create(name: "Ema", owner: owner) }
   let!(:car) { Car.create(name: "Ferrari", lock_version: 1) }
 
-  it 'has a version number' do
+  it "has a version number" do
     expect(Activerecord::BatchTouching::VERSION).not_to be_nil
   end
 
@@ -37,7 +39,7 @@ describe Activerecord::BatchTouching do
     end
   end
 
-  it 'sets updated_at on the in-memory instance when it eventually touches the record' do
+  it "sets updated_at on the in-memory instance when it eventually touches the record" do
     original_time = new_time = nil
 
     Timecop.freeze(2014, 7, 4, 12, 0, 0) do
@@ -119,7 +121,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "can update nonstandard columns" do
-    expect_updates ["owners" => { ids: owner, columns: ["updated_at", "happy_at"] }] do
+    expect_updates ["owners" => { ids: owner, columns: %w[updated_at happy_at] }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
       end
@@ -127,7 +129,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "treats string column names and symbol column names as the same" do
-    expect_updates ["owners" => { ids: owner, columns: ["updated_at", "happy_at"] }] do
+    expect_updates ["owners" => { ids: owner, columns: %w[updated_at happy_at] }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
         owner.touch "happy_at"
@@ -138,7 +140,7 @@ describe Activerecord::BatchTouching do
   it "splits up nonstandard column touches and standard column touches" do
     owner2 = Owner.create name: "Guybrush"
 
-    expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at"] } },
+    expect_updates [{ "owners" => { ids: owner, columns: %w[updated_at happy_at] } },
                     { "owners" => { ids: owner2, columns: ["updated_at"] } }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
@@ -148,8 +150,8 @@ describe Activerecord::BatchTouching do
   end
 
   it "can update multiple nonstandard columns of a single record in different calls to touch" do
-    expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at"] } },
-                    { "owners" => { ids: owner, columns: ["updated_at", "sad_at"] } }] do
+    expect_updates [{ "owners" => { ids: owner, columns: %w[updated_at happy_at] } },
+                    { "owners" => { ids: owner, columns: %w[updated_at sad_at] } }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at
         owner.touch :sad_at
@@ -158,7 +160,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "can update multiple nonstandard columns of a single record in a single call to touch" do
-    expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at", "sad_at"] } }] do
+    expect_updates [{ "owners" => { ids: owner, columns: %w[updated_at happy_at sad_at] } }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at, :sad_at
       end
@@ -261,8 +263,10 @@ describe Activerecord::BatchTouching do
 
   it "consolidates touch: :column_name touches" do
     pet_klass = Class.new(ActiveRecord::Base) do
-      def self.name; 'Pet'; end
-      belongs_to :owner, :touch => :happy_at
+      def self.name
+        "Pet"
+      end
+      belongs_to :owner, touch: :happy_at
       after_touch :after_touch_callback
       def after_touch_callback; end
     end
@@ -270,7 +274,7 @@ describe Activerecord::BatchTouching do
     pet = pet_klass.first
     owner = pet.owner
 
-    expect_updates [{ "owners" => { ids: owner, columns: ["updated_at", "happy_at"] } }, { "pets" => { ids: pet } }] do
+    expect_updates [{ "owners" => { ids: owner, columns: %w[updated_at happy_at] } }, { "pets" => { ids: pet } }] do
       ActiveRecord::Base.transaction do
         pet.touch
         pet.touch
@@ -280,12 +284,16 @@ describe Activerecord::BatchTouching do
 
   it "keeps iterating as long as after_touch keeps causing more records to be touched" do
     pet_klass = Class.new(ActiveRecord::Base) do
-      def self.name; 'Pet'; end
+      def self.name
+        "Pet"
+      end
       belongs_to :owner
 
       # Touch the owner in after_touch instead of using touch: true
       after_touch :touch_owner
-      def touch_owner; owner.touch; end
+      def touch_owner
+        owner.touch
+      end
     end
 
     pet = pet_klass.first
@@ -322,12 +330,12 @@ describe Activerecord::BatchTouching do
   #
   # end
 
-  context 'dependent deletes' do
+  context "dependent deletes" do
     let!(:post) { Post.create }
     let!(:user) { User.create }
     let!(:comment) { Comment.create(post: post, user: user) }
 
-    it 'does not attempt to touch deleted records' do
+    it "does not attempt to touch deleted records" do
       expect do
         post.destroy
       end.not_to raise_error
@@ -378,10 +386,10 @@ describe Activerecord::BatchTouching do
   # In some cases, such as SQLite3 when outside a transaction, the logged SQL uses ? instead of record ids.
   def ids_sql(ids)
     ids = ids.map { |id| id.class.respond_to?(:primary_key) ? id.send(id.class.primary_key) : id }
-    ids.length > 1 ? %{ IN \\(#{Array.new(ids.length, '\?').join(", ")}\\)} : %{( = #{ids.first}|= \\?|= \\$1)}
+    ids.length > 1 ? %{ IN \\(#{Array.new(ids.length, '\?').join(', ')}\\)} : %{( = #{ids.first}|= \\?|= \\$1)}
   end
 
   def touch_sql(table, columns, ids)
-    %{UPDATE \\"#{table}"\\ SET #{columns.map { |column| %{\\"#{column}\\" =.+} }.join(", ")} .+#{ids_sql(ids)}\\Z}
+    %(UPDATE \\"#{table}"\\ SET #{columns.map { |column| %(\\"#{column}\\" =.+) }.join(', ')} .+#{ids_sql(ids)}\\Z)
   end
 end

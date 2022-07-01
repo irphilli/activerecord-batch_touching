@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 if ENV["COVERAGE"]
-  require_relative 'rcov_exclude_list.rb'
+  require_relative "rcov_exclude_list"
   exlist = Dir.glob(@exclude_list)
-  require 'simplecov'
+  require "simplecov"
   # require 'simplecov-rcov'
   # SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
   SimpleCov.start do
@@ -11,12 +13,12 @@ if ENV["COVERAGE"]
   end
 end
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'active_record'
-require 'activerecord/batch_touching'
-require 'timecop'
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+require "active_record"
+require "activerecord/batch_touching"
+require "timecop"
 
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 
-load File.dirname(__FILE__) + '/support/schema.rb'
-require File.dirname(__FILE__) + '/support/models.rb'
+load "#{File.dirname(__FILE__)}/support/schema.rb"
+require "#{File.dirname(__FILE__)}/support/models.rb"

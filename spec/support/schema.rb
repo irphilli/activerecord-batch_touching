@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 ActiveRecord::Schema.define do
   self.verbose = false
 
-  create_table :owners, :force => true do |t|
+  create_table :owners, force: true do |t|
     t.string :name
 
     t.timestamps
@@ -9,7 +11,7 @@ ActiveRecord::Schema.define do
     t.datetime :sad_at
   end
 
-  create_table :pets, :force => true do |t|
+  create_table :pets, force: true do |t|
     t.string :name
     t.integer :owner_id
     t.datetime :neutered_at

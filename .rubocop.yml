@@ -8,3 +8,9 @@ inherit_from: .rubocop_todo.yml
 AllCops:
   TargetRubyVersion: 2.7
   NewCops: enable
+
+Style/HashAsLastArrayItem:
+  EnforcedStyle: no_braces
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
