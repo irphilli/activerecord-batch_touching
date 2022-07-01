@@ -7,7 +7,7 @@ describe Activerecord::BatchTouching do
   let!(:car) { Car.create(name: "Ferrari", lock_version: 1) }
 
   it 'has a version number' do
-    expect(Activerecord::BatchTouching::VERSION).not_to be nil
+    expect(Activerecord::BatchTouching::VERSION).not_to be_nil
   end
 
   it "touch returns true when not in a batch_touching block" do
@@ -50,12 +50,12 @@ describe Activerecord::BatchTouching do
       ActiveRecord::Base.transaction do
         owner.touch
         expect(owner.updated_at).to eq(original_time)
-        expect(owner.changed?).to be_falsey
+        expect(owner).not_to be_changed
       end
     end
 
     expect(owner.updated_at).to eq(new_time)
-    expect(owner.changed?).to be_falsey
+    expect(owner).not_to be_changed
   end
 
   it "does not mark the instance as changed when touch is called" do
@@ -82,7 +82,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "does nothing if no_touching is on" do
-    expect(owner).to receive(:_run_touch_callbacks).never
+    expect(owner).not_to receive(:_run_touch_callbacks)
     expect_updates [] do
       ActiveRecord::Base.no_touching do
         ActiveRecord::Base.transaction do
@@ -93,7 +93,7 @@ describe Activerecord::BatchTouching do
   end
 
   it "only applies touches for which no_touching is off" do
-    expect(owner).to receive(:_run_touch_callbacks).never
+    expect(owner).not_to receive(:_run_touch_callbacks)
     expect(pet1).to receive(:_run_touch_callbacks).once.and_call_original
     expect_updates ["pets" => { ids: pet1 }] do
       Owner.no_touching do
@@ -107,7 +107,7 @@ describe Activerecord::BatchTouching do
 
   it "does not apply nested touches if no_touching was turned on inside batch_touching" do
     expect(owner).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet1).to receive(:_run_touch_callbacks).never
+    expect(pet1).not_to receive(:_run_touch_callbacks)
     expect_updates ["owners" => { ids: owner }] do
       ActiveRecord::Base.transaction do
         owner.touch
@@ -331,7 +331,7 @@ describe Activerecord::BatchTouching do
       expect do
         post.destroy
       end.not_to raise_error
-      expect(post.destroyed?).to eq true
+      expect(post.destroyed?).to be true
     end
   end
 
