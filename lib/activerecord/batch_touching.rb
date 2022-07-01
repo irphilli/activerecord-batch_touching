@@ -104,7 +104,10 @@ module ActiveRecord
           records.each do |record|
             record.instance_eval do
               columns.each { |column| write_attribute column, current_time }
-              increment_lock if locking_enabled?
+              if locking_enabled?
+                self[self.class.locking_column] += 1
+                clear_attribute_change(self.class.locking_column)
+              end
               clear_attribute_changes(columns)
             end
           end
