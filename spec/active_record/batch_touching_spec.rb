@@ -317,6 +317,19 @@ describe Activerecord::BatchTouching do
     expect(car2.reload.lock_version).to equal(3)
   end
 
+  context 'dependent deletes' do
+    let!(:post) { Post.create }
+    let!(:user) { User.create }
+    let!(:comment) { Comment.create(post: post, user: user) }
+
+    it 'does not attempt to touch deleted records' do
+      expect do
+        post.destroy
+      end.not_to raise_error
+      expect(post.destroyed?).to eq true
+    end
+  end
+
   private
 
   def expect_updates(tables_ids_and_columns)

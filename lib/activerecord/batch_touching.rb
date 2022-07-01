@@ -111,7 +111,8 @@ module ActiveRecord
         # Sort by class name. Having a consistent order can help mitigate deadlocks.
         sorted_records = all_states.records.keys.sort_by { |k| k.first.name }.map { |k| [k, all_states.records[k]] }.to_h
         sorted_records.each do |(klass, columns), records|
-          touch_records klass, columns, records
+          records.reject!(&:destroyed?)
+          touch_records klass, columns, records if records.present?
         end
       end
 
