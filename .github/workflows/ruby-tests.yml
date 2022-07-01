@@ -34,6 +34,9 @@ jobs:
           ruby-version: ${{ matrix.ruby-version }}
       - name: Install dependencies
         run: bundle install
+      - name: Run rubocop
+        run: bundle exec rubocop
+        if: matrix.ruby-version == '3.1' && matrix.gemfile == 'activerecord7'
       - name: Run tests
         run: bundle exec rspec
       - name: Upload Coverage
