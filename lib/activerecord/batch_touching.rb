@@ -91,20 +91,15 @@ module ActiveRecord
 
       # Apply the touches that were batched. We're in a transaction already so there's no need to open one.
       def apply_touches
+        current_time = ActiveRecord::Base.current_time_from_proper_timezone
         callbacks_run = Set.new
         all_states = State.new
         while current_state.more_records?
           all_states.merge!(current_state)
           state_records = current_state.records
           current_state.clear_records!
-          state_records.each do |_, records|
-            # Run callbacks to collect more touches (i.e. touch: true for associations)
-            records.each do |record|
-              unless callbacks_run.include?(record)
-                record._run_touch_callbacks
-                callbacks_run.add(record)
-              end
-            end
+          state_records.each do |(_klass, columns), records|
+            soft_touch_records(columns, records, current_time, callbacks_run)
           end
         end
 
@@ -112,30 +107,38 @@ module ActiveRecord
         sorted_records = all_states.records.keys.sort_by { |k| k.first.name }.map { |k| [k, all_states.records[k]] }.to_h
         sorted_records.each do |(klass, columns), records|
           records.reject!(&:destroyed?)
-          touch_records klass, columns, records if records.present?
+          touch_records klass, columns, records, current_time if records.present?
         end
       end
 
-      # Touch the specified records--non-empty set of instances of the same class.
-      def touch_records(klass, columns, records)
-        if columns.present?
-          current_time = records.first.send(:current_time_from_proper_timezone)
-
-          records.each do |record|
-            record.instance_eval do
-              columns.each { |column| write_attribute column, current_time }
+      # Only set new timestamp in memory.
+      # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
+      def soft_touch_records(columns, records, time, callbacks_run)
+        records.each do |record|
+          record.instance_eval do
+            unless destroyed?
+              columns.each { |column| write_attribute column, time }
               if locking_enabled?
                 self[self.class.locking_column] += 1
                 clear_attribute_change(self.class.locking_column)
               end
               clear_attribute_changes(columns)
             end
+            unless callbacks_run.include?(record)
+              record._run_touch_callbacks
+              callbacks_run.add(record)
+            end
           end
+        end
+      end
 
-          sql = columns.map { |column| "#{klass.connection.quote_column_name(column)} = :current_time" }.join(", ")
+      # Touch the specified records--non-empty set of instances of the same class.
+      def touch_records(klass, columns, records, time)
+        if columns.present?
+          sql = columns.map { |column| "#{klass.connection.quote_column_name(column)} = :time" }.join(", ")
           sql += ", #{klass.locking_column} = #{klass.locking_column} + 1" if klass.locking_enabled?
 
-          klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, current_time: current_time])
+          klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, time: time])
         end
       end
     end
