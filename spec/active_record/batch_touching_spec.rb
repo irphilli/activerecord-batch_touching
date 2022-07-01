@@ -1,18 +1,13 @@
 require 'spec_helper'
 
 describe Activerecord::BatchTouching do
-  let(:owner) { Owner.create name: "Rosey" }
-  let(:pet1) { Pet.create(name: "Bones") }
-  let(:pet2) { Pet.create(name: "Ema") }
+  let!(:owner) { Owner.create name: "Rosey" }
+  let!(:pet1) { Pet.create(name: "Bones", owner: owner) }
+  let!(:pet2) { Pet.create(name: "Ema", owner: owner) }
   let!(:car) { Car.create(name: "Ferrari", lock_version: 1) }
 
   it 'has a version number' do
     expect(Activerecord::BatchTouching::VERSION).not_to be nil
-  end
-
-  before do
-    owner.pets << pet1
-    owner.pets << pet2
   end
 
   it "touch returns true when not in a batch_touching block" do
