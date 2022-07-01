@@ -2,6 +2,36 @@ require "activerecord/batch_touching/version"
 require "activerecord/batch_touching/state"
 
 module ActiveRecord
+  module BatchTouchingAbstractAdapter
+    # Batches up +touch+ calls for the duration of a transaction.
+    # +after_touch+ callbacks are also delayed until the transaction is committed.
+    #
+    # ==== Examples
+    #
+    #   # Touches Person.first and Person.last in a single database round-trip.
+    #   Person.transaction do
+    #     Person.first.touch
+    #     Person.last.touch
+    #   end
+    #
+    #   # Touches Person.first once, not twice, right before the transaction is committed.
+    #   Person.transaction do
+    #     Person.first.touch
+    #     Person.first.touch
+    #   end
+    def transaction(requires_new: nil, isolation: nil, joinable: true, &block)
+      super(requires_new: requires_new, isolation: isolation, joinable: joinable) do
+        BatchTouching.start(requires_new: requires_new, &block)
+      end
+    end
+  end
+
+  module ConnectionAdapters
+    class AbstractAdapter
+      prepend BatchTouchingAbstractAdapter
+    end
+  end
+
   # = Active Record Batch Touching
   module BatchTouching # :nodoc:
     extend ActiveSupport::Concern
@@ -9,7 +39,7 @@ module ActiveRecord
     # Override ActiveRecord::Base#touch_later.  This will effectively disable the current built-in mechanism AR uses
     # to delay touching in favor of our method of batch touching.
     def touch_later(*names)
-      touch(*names)
+      BatchTouching.batch_touching? ? touch(*names) : super
     end
 
     # Override ActiveRecord::Base#touch.  If currently batching touches, always return
@@ -21,32 +51,6 @@ module ActiveRecord
         true
       else
         super
-      end
-    end
-
-    # These get added as class methods to ActiveRecord::Base.
-    module ClassMethods
-      # Batches up +touch+ calls for the duration of a transaction.
-      # +after_touch+ callbacks are also delayed until the transaction is committed.
-      #
-      # ==== Examples
-      #
-      #   # Touches Person.first and Person.last in a single database round-trip.
-      #   Person.transaction do
-      #     Person.first.touch
-      #     Person.last.touch
-      #   end
-      #
-      #   # Touches Person.first once, not twice, right before the transaction is committed.
-      #   Person.transaction do
-      #     Person.first.touch
-      #     Person.first.touch
-      #   end
-      #
-      def transaction(**options, &block)
-        super(**options) do
-          BatchTouching.start(**options, &block)
-        end
       end
     end
 
