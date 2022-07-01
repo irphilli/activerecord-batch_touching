@@ -77,20 +77,6 @@ module ActiveRecord
         Thread.current[:batch_touching_disabled] || @disabled
       end
 
-      def states
-        Thread.current[:batch_touching_states] ||= []
-      end
-
-      def current_state
-        states.last
-      end
-
-      delegate :add_record, to: :current_state
-
-      def batch_touching?
-        states.present? && !disabled?
-      end
-
       # Start batching all touches. When done, apply them. (Unless nested.)
       def start(options = {})
         states.push State.new
@@ -103,6 +89,22 @@ module ActiveRecord
         # Decrement nesting even if +apply_touches+ raised an error. To ensure the stack of States
         # is empty after the top-level transaction exits.
         states.pop
+      end
+
+      delegate :add_record, to: :current_state
+
+      def batch_touching?
+        states.present? && !disabled?
+      end
+
+      private
+
+      def states
+        Thread.current[:batch_touching_states] ||= []
+      end
+
+      def current_state
+        states.last
       end
 
       # When exiting a nested transaction, merge the nested transaction's
@@ -129,38 +131,42 @@ module ActiveRecord
         sorted_records = all_states.records.keys.sort_by { |k| k.first.name }.map { |k| [k, all_states.records[k]] }.to_h
         sorted_records.each do |(klass, columns), records|
           records.reject!(&:destroyed?)
-          touch_records klass, columns, records, current_time if records.present?
+          touch_records klass, columns, records, current_time
         end
       end
 
-      # Only set new timestamp in memory.
-      # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
+      # Perform DB update to touch records
+      def touch_records(klass, columns, records, time)
+        return if columns.blank? || records.blank?
+
+        sql = columns.map { |column| "#{klass.connection.quote_column_name(column)} = :time" }.join(", ")
+        sql += ", #{klass.locking_column} = #{klass.locking_column} + 1" if klass.locking_enabled?
+
+        klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, time: time])
+      end
+
+      # Set new timestamp in memory, without updating the DB just yet.
       def soft_touch_records(columns, records, time, callbacks_run)
         records.each do |record|
-          record.instance_eval do
-            unless destroyed?
-              columns.each { |column| write_attribute column, time }
-              if locking_enabled?
-                self[self.class.locking_column] += 1
-                clear_attribute_change(self.class.locking_column)
-              end
-              clear_attribute_changes(columns)
-            end
-            unless callbacks_run.include?(record)
-              record._run_touch_callbacks
-              callbacks_run.add(record)
-            end
+          soft_touch_record columns, record, time
+          # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
+          # Keep track of callbacks run, so we only run them once per record
+          unless callbacks_run.include?(record)
+            record._run_touch_callbacks
+            callbacks_run.add(record)
           end
         end
       end
 
-      # Touch the specified records--non-empty set of instances of the same class.
-      def touch_records(klass, columns, records, time)
-        if columns.present?
-          sql = columns.map { |column| "#{klass.connection.quote_column_name(column)} = :time" }.join(", ")
-          sql += ", #{klass.locking_column} = #{klass.locking_column} + 1" if klass.locking_enabled?
+      def soft_touch_record(columns, record, time)
+        return if record.destroyed?
 
-          klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, time: time])
+        columns.each { |column| record.write_attribute column, time }
+        if record.locking_enabled?
+          record[record.class.locking_column] += 1
+          record.clear_attribute_changes(columns + [record.class.locking_column])
+        else
+          record.clear_attribute_changes(columns)
         end
       end
     end
