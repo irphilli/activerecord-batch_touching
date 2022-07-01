@@ -15,7 +15,7 @@ end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'active_record'
-require 'active_record/batch_touching'
+require 'activerecord/batch_touching'
 require 'timecop'
 
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
