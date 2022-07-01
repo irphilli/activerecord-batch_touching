@@ -1,5 +1,3 @@
-require 'yarjuf'
-
 if ENV["COVERAGE"]
   require_relative 'rcov_exclude_list.rb'
   exlist = Dir.glob(@exclude_list)
