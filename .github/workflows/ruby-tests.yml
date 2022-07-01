@@ -38,4 +38,4 @@ jobs:
         run: bundle exec rspec
       - name: Upload Coverage
         uses: paambaati/codeclimate-action@v3.0.0
-        if: matrix.ruby-version == '3.1' && matrix.gemfile == 'activerecord6'
+        if: matrix.ruby-version == '3.1' && matrix.gemfile == 'activerecord7'
