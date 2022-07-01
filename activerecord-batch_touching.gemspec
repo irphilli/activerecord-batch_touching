@@ -5,7 +5,7 @@ require 'activerecord/batch_touching/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "activerecord-batch_touching"
-  spec.version       = Activerecord::BatchTouching::VERSION
+  spec.version       = "1.0-beta4" # Activerecord::BatchTouching::VERSION
   spec.authors       = ["Brian Morearty", "Phil Phillips"]
   spec.email         = ["phil@productplan.com"]
   spec.summary       = %q{Batch up your ActiveRecord "touch" operations for better performance.}
