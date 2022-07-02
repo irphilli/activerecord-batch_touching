@@ -32,11 +32,14 @@ describe Activerecord::BatchTouching do
   end
 
   it "calls touch callbacks just once when there are multiple touches" do
-    expect(owner).to receive(:_run_touch_callbacks).once.and_call_original
+    allow(owner).to receive(:_run_touch_callbacks).and_call_original
+
     ActiveRecord::Base.transaction do
       owner.touch
       owner.touch
     end
+
+    expect(owner).to have_received(:_run_touch_callbacks).once
   end
 
   it "sets updated_at on the in-memory instance when it eventually touches the record" do
@@ -84,7 +87,8 @@ describe Activerecord::BatchTouching do
   end
 
   it "does nothing if no_touching is on" do
-    expect(owner).not_to receive(:_run_touch_callbacks)
+    allow(owner).to receive(:_run_touch_callbacks)
+
     expect_updates [] do
       ActiveRecord::Base.no_touching do
         ActiveRecord::Base.transaction do
@@ -92,11 +96,14 @@ describe Activerecord::BatchTouching do
         end
       end
     end
+
+    expect(owner).not_to have_received(:_run_touch_callbacks)
   end
 
   it "only applies touches for which no_touching is off" do
-    expect(owner).not_to receive(:_run_touch_callbacks)
-    expect(pet1).to receive(:_run_touch_callbacks).once.and_call_original
+    allow(owner).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet1).to receive(:_run_touch_callbacks).and_call_original
+
     expect_updates ["pets" => { ids: pet1 }] do
       Owner.no_touching do
         ActiveRecord::Base.transaction do
@@ -105,11 +112,15 @@ describe Activerecord::BatchTouching do
         end
       end
     end
+
+    expect(owner).not_to have_received(:_run_touch_callbacks)
+    expect(pet1).to have_received(:_run_touch_callbacks).once
   end
 
   it "does not apply nested touches if no_touching was turned on inside batch_touching" do
-    expect(owner).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet1).not_to receive(:_run_touch_callbacks)
+    allow(owner).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet1).to receive(:_run_touch_callbacks).and_call_original
+
     expect_updates ["owners" => { ids: owner }] do
       ActiveRecord::Base.transaction do
         owner.touch
@@ -118,6 +129,9 @@ describe Activerecord::BatchTouching do
         end
       end
     end
+
+    expect(owner).to have_received(:_run_touch_callbacks)
+    expect(pet1).not_to have_received(:_run_touch_callbacks)
   end
 
   it "can update nonstandard columns" do
@@ -168,9 +182,9 @@ describe Activerecord::BatchTouching do
   end
 
   it "does not touch the owning record via touch: true if it was already touched explicitly" do
-    expect(owner).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet1).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet2).to receive(:_run_touch_callbacks).once.and_call_original
+    allow(owner).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet1).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet2).to receive(:_run_touch_callbacks).and_call_original
 
     expect_updates [{ "pets" => { ids: [pet1, pet2] } }, { "owners" => { ids: owner } }] do
       ActiveRecord::Base.transaction do
@@ -179,6 +193,10 @@ describe Activerecord::BatchTouching do
         pet2.touch
       end
     end
+
+    expect(owner).to have_received(:_run_touch_callbacks).once
+    expect(pet1).to have_received(:_run_touch_callbacks).once
+    expect(pet2).to have_received(:_run_touch_callbacks).once
   end
 
   it "does not consolidate touches when outside a transaction" do
@@ -190,9 +208,9 @@ describe Activerecord::BatchTouching do
   end
 
   it "nested transactions get consolidated into a single set of touches" do
-    expect(owner).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet1).to receive(:_run_touch_callbacks).once.and_call_original
-    expect(pet2).to receive(:_run_touch_callbacks).once.and_call_original
+    allow(owner).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet1).to receive(:_run_touch_callbacks).and_call_original
+    allow(pet2).to receive(:_run_touch_callbacks).and_call_original
 
     expect_updates [{ "pets" => { ids: [pet1, pet2] } }, { "owners" => { ids: owner } }] do
       ActiveRecord::Base.transaction do
@@ -202,6 +220,10 @@ describe Activerecord::BatchTouching do
         end
       end
     end
+
+    expect(owner).to have_received(:_run_touch_callbacks).once
+    expect(pet1).to have_received(:_run_touch_callbacks).once
+    expect(pet2).to have_received(:_run_touch_callbacks).once
   end
 
   it "rolling back from a nested transaction without :requires_new touches the records in the inner transaction" do
@@ -353,6 +375,8 @@ describe Activerecord::BatchTouching do
 
   def expect_updates(tables_ids_and_columns)
     expected_sql = expected_sql_for(tables_ids_and_columns)
+
+    # rubocop:disable RSpec/MessageSpies
     expect(ActiveRecord::Base.connection).to receive(:update).exactly(expected_sql.length).times do |stmt, _, _|
       if /UPDATE /i.match?(stmt.to_sql)
         index = expected_sql.index { |expected_stmt| stmt.to_sql =~ expected_stmt }
@@ -360,6 +384,7 @@ describe Activerecord::BatchTouching do
         expected_sql.delete_at(index)
       end
     end
+    # rubocop:enable RSpec/MessageSpies
 
     yield
 
