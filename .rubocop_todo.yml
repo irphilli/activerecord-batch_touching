@@ -22,13 +22,6 @@ RSpec/ExampleLength:
   Max: 17
 
 # Offense count: 1
-# Configuration parameters: Include, CustomTransform, IgnoreMethods, SpecSuffixOnly.
-# Include: **/*_spec*rb*, **/spec/**/*
-RSpec/FilePath:
-  Exclude:
-    - 'spec/active_record/batch_touching_spec.rb'
-
-# Offense count: 1
 RSpec/LetSetup:
   Exclude:
     - 'spec/active_record/batch_touching_spec.rb'

@@ -74,8 +74,8 @@ describe Activerecord::BatchTouching do
     expect(car).not_to be_changed
   end
 
-  it "consolidates touches for all instances in a single table" do
-    expect_updates [{ "pets" => { ids: [pet1, pet2] } }, "owners" => { ids: owner }] do
+  it "consolidates touch: true touches" do
+    expect_updates [{ "pets" => { ids: [pet1, pet2] } }, { "owners" => { ids: owner } }] do
       ActiveRecord::Base.transaction do
         pet1.touch
         pet2.touch
@@ -163,15 +163,6 @@ describe Activerecord::BatchTouching do
     expect_updates [{ "owners" => { ids: owner, columns: %w[updated_at happy_at sad_at] } }] do
       ActiveRecord::Base.transaction do
         owner.touch :happy_at, :sad_at
-      end
-    end
-  end
-
-  it "consolidates touch: true touches" do
-    expect_updates [{ "pets" => { ids: [pet1, pet2] } }, { "owners" => { ids: owner } }] do
-      ActiveRecord::Base.transaction do
-        pet1.touch
-        pet2.touch
       end
     end
   end
@@ -346,9 +337,9 @@ describe Activerecord::BatchTouching do
   end
 
   context "with dependent deletes" do
-    let!(:post) { Post.create }
-    let!(:user) { User.create }
-    let!(:comment) { Comment.create(post: post, user: user) }
+    let(:post) { Post.create }
+    let(:user) { User.create }
+    let(:comment) { Comment.create(post: post, user: user) }
 
     it "does not attempt to touch deleted records" do
       expect do
