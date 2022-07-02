@@ -69,7 +69,7 @@ module ActiveRecord
 
       # Disable batch touching for a block
       def disable
-        Thread.current[:batch_touching_disabled] = false
+        Thread.current[:batch_touching_disabled] = true
         yield
       ensure
         Thread.current[:batch_touching_disabled] = false

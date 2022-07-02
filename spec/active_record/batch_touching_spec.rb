@@ -322,13 +322,28 @@ describe Activerecord::BatchTouching do
     expect(car2.reload.lock_version).to equal(3)
   end
 
-  # it "can be disabled and enabled globally" do
-  #
-  # end
-  #
-  # it "can be disabled within a block" do
-  #
-  # end
+  it "can be disabled and enabled globally" do
+    ActiveRecord::BatchTouching.disable!
+
+    ActiveRecord::Base.transaction do
+      expect(ActiveRecord::BatchTouching.batch_touching?).to be(false)
+    end
+
+    ActiveRecord::BatchTouching.enable!
+    ActiveRecord::Base.transaction do
+      expect(ActiveRecord::BatchTouching.batch_touching?).to be(true)
+    end
+  ensure
+    ActiveRecord::BatchTouching.enable!
+  end
+
+  it "can be disabled within a block" do
+    ActiveRecord::BatchTouching.disable do
+      ActiveRecord::Base.transaction do
+        expect(ActiveRecord::BatchTouching.batch_touching?).to be(false)
+      end
+    end
+  end
 
   context "dependent deletes" do
     let!(:post) { Post.create }
