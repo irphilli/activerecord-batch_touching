@@ -21,11 +21,6 @@ Metrics/MethodLength:
 RSpec/ExampleLength:
   Max: 17
 
-# Offense count: 1
-RSpec/LetSetup:
-  Exclude:
-    - 'spec/active_record/batch_touching_spec.rb'
-
 # Offense count: 13
 # Configuration parameters: .
 # SupportedStyles: have_received, receive
@@ -41,25 +36,12 @@ RSpec/MultipleExpectations:
 RSpec/MultipleMemoizedHelpers:
   Max: 7
 
-# Offense count: 2
-RSpec/RepeatedExample:
-  Exclude:
-    - 'spec/active_record/batch_touching_spec.rb'
-
 # Offense count: 1
 # Configuration parameters: AllowedConstants.
 Style/Documentation:
   Exclude:
     - 'spec/**/*'
     - 'test/**/*'
-    - 'lib/activerecord/batch_touching.rb'
-
-# Offense count: 1
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: RequireEnglish, EnforcedStyle.
-# SupportedStyles: use_perl_names, use_english_names, use_builtin_english_names
-Style/SpecialGlobalVars:
-  Exclude:
     - 'lib/activerecord/batch_touching.rb'
 
 # Offense count: 3

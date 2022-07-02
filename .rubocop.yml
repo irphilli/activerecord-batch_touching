@@ -14,3 +14,6 @@ Style/HashAsLastArrayItem:
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
+
+Style/SpecialGlobalVars:
+  Enabled: false
