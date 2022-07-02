@@ -16,13 +16,6 @@ Metrics/AbcSize:
 Metrics/MethodLength:
   Max: 16
 
-# Offense count: 1
-# Configuration parameters: Prefixes.
-# Prefixes: when, with, without
-RSpec/ContextWording:
-  Exclude:
-    - 'spec/active_record/batch_touching_spec.rb'
-
 # Offense count: 19
 # Configuration parameters: CountAsOne.
 RSpec/ExampleLength:

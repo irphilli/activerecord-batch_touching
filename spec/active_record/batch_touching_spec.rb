@@ -345,7 +345,7 @@ describe Activerecord::BatchTouching do
     end
   end
 
-  context "dependent deletes" do
+  context "with dependent deletes" do
     let!(:post) { Post.create }
     let!(:user) { User.create }
     let!(:comment) { Comment.create(post: post, user: user) }
