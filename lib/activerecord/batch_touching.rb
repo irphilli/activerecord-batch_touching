@@ -118,14 +118,14 @@ module ActiveRecord
       # Apply the touches that were batched. We're in a transaction already so there's no need to open one.
       def apply_touches
         current_time = ActiveRecord::Base.current_time_from_proper_timezone
-        callbacks_run = Set.new
+        already_touched = Set.new
         all_states = State.new
         while current_state.more_records?
           all_states.merge!(current_state)
           state_records = current_state.records
           current_state.clear_records!
           state_records.each do |(_klass, columns), records|
-            soft_touch_records(columns, records, current_time, callbacks_run)
+            soft_touch_records(columns, records, current_time, already_touched)
           end
         end
 
@@ -148,27 +148,21 @@ module ActiveRecord
       end
 
       # Set new timestamp in memory, without updating the DB just yet.
-      def soft_touch_records(columns, records, time, callbacks_run)
+      def soft_touch_records(columns, records, time, already_touched)
         records.each do |record|
-          soft_touch_record columns, record, time
-          # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
-          # Keep track of callbacks run, so we only run them once per record
-          unless callbacks_run.include?(record)
-            record._run_touch_callbacks
-            callbacks_run.add(record)
+          next if record.destroyed? || already_touched.include?(record)
+
+          columns.each { |column| record.write_attribute column, time }
+          if record.locking_enabled?
+            record[record.class.locking_column] += 1
+            record.clear_attribute_changes(columns + [record.class.locking_column])
+          else
+            record.clear_attribute_changes(columns)
           end
-        end
-      end
 
-      def soft_touch_record(columns, record, time)
-        return if record.destroyed?
-
-        columns.each { |column| record.write_attribute column, time }
-        if record.locking_enabled?
-          record[record.class.locking_column] += 1
-          record.clear_attribute_changes(columns + [record.class.locking_column])
-        else
-          record.clear_attribute_changes(columns)
+          # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
+          record._run_touch_callbacks
+          already_touched.add(record)
         end
       end
     end
