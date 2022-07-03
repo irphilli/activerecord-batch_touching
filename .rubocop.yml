@@ -17,3 +17,19 @@ Style/StringLiterals:
 
 Style/SpecialGlobalVars:
   Enabled: false
+
+# Will lean on CodeClimate for these
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Layout/LineLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
