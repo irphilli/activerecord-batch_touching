@@ -1,4 +1,4 @@
-# Activerecord::BatchTouching
+# ActiveRecord::BatchTouching
  [![Gem Version](https://badge.fury.io/rb/activerecord-batch_touching.svg)](http://badge.fury.io/rb/activerecord-batch_touching)
 [![Build Status](https://github.com/irphilli/activerecord-batch_touching/actions/workflows/ruby-tests.yml/badge.svg?branch=main)](https://github.com/irphilli/activerecord-batch_touching/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/maintainability)](https://codeclimate.com/github/irphilli/activerecord-batch_touching/maintainability)
