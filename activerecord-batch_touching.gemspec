@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   spec.homepage      = ""
   spec.license       = "MIT"
 
-  spec.files         = Dir["LICENSE", "lib/**/*"] # TODO: Add README
+  spec.files         = Dir["LICENSE", "README", "lib/**/*"]
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
