@@ -161,7 +161,7 @@ module ActiveRecord
           already_touched.add(record)
         end
       end
-      
+
       def soft_touch_record(columns, record, time)
         columns.each { |column| record.write_attribute column, time }
         if record.locking_enabled?
