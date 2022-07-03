@@ -149,6 +149,8 @@ module ActiveRecord
 
       # Set new timestamp in memory, without updating the DB just yet.
       def soft_touch_records(columns, records, time, already_touched)
+        return if columns.blank? || records.blank?
+
         records.each do |record|
           next if record.destroyed? || already_touched.include?(record)
 
