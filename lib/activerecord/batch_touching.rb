@@ -154,17 +154,21 @@ module ActiveRecord
         records.each do |record|
           next if record.destroyed? || already_touched.include?(record)
 
-          columns.each { |column| record.write_attribute column, time }
-          if record.locking_enabled?
-            record[record.class.locking_column] += 1
-            record.clear_attribute_changes(columns + [record.class.locking_column])
-          else
-            record.clear_attribute_changes(columns)
-          end
+          soft_touch_record(columns, record, time)
 
           # Running callbacks also allows us to collect more touches (i.e. touch: true for associations).
           record._run_touch_callbacks
           already_touched.add(record)
+        end
+      end
+      
+      def soft_touch_record(columns, record, time)
+        columns.each { |column| record.write_attribute column, time }
+        if record.locking_enabled?
+          record[record.class.locking_column] += 1
+          record.clear_attribute_changes(columns + [record.class.locking_column])
+        else
+          record.clear_attribute_changes(columns)
         end
       end
     end
