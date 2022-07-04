@@ -80,13 +80,13 @@ module ActiveRecord
       end
 
       # Start batching all touches. When done, apply them. (Unless nested.)
-      def start(options = {})
+      def start(requires_new:)
         states.push State.new
         yield.tap do
           apply_touches if states.length == 1
         end
       ensure
-        merge_transactions unless $! && options[:requires_new]
+        merge_transactions unless $! && requires_new
 
         # Decrement nesting even if +apply_touches+ raised an error. To ensure the stack of States
         # is empty after the top-level transaction exits.
