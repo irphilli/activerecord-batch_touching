@@ -1,8 +1,8 @@
 # ActiveRecord::BatchTouching
  [![Gem Version](https://badge.fury.io/rb/activerecord-batch_touching.svg)](http://badge.fury.io/rb/activerecord-batch_touching)
 [![Build Status](https://github.com/ProductPlan/activerecord-batch_touching/actions/workflows/ruby-tests.yml/badge.svg?branch=main)](https://github.com/ProductPlan/activerecord-batch_touching/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/maintainability)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/test_coverage)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4aa3ff57a349f0cdff95/maintainability)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/4aa3ff57a349f0cdff95/test_coverage)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/test_coverage)
  
 Batch up your ActiveRecord "touch" operations for better performance.
 
