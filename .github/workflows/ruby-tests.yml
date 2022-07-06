@@ -12,7 +12,7 @@ jobs:
     name: Specs - Ruby ${{ matrix.ruby-version }} ${{matrix.gemfile}}
     runs-on: ubuntu-latest
     env:
-      CC_TEST_REPORTER_ID: c40b3a4da6b10ebaf517551469ec8a5788c6edff1b869d74b3b36153ed3a9764
+      CC_TEST_REPORTER_ID: 832977443789ffff9eb3c342049fdb5ce76f5333f1e1efc34481eb4d5332b839
       BUNDLE_GEMFILE: ${{ github.workspace }}/gemfiles/${{ matrix.gemfile }}.gemfile
       COVERAGE: true
 
