@@ -1,8 +1,8 @@
 # ActiveRecord::BatchTouching
  [![Gem Version](https://badge.fury.io/rb/activerecord-batch_touching.svg)](http://badge.fury.io/rb/activerecord-batch_touching)
-[![Build Status](https://github.com/irphilli/activerecord-batch_touching/actions/workflows/ruby-tests.yml/badge.svg?branch=main)](https://github.com/irphilli/activerecord-batch_touching/actions)
-[![Maintainability](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/maintainability)](https://codeclimate.com/github/irphilli/activerecord-batch_touching/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/test_coverage)](https://codeclimate.com/github/irphilli/activerecord-batch_touching/test_coverage)
+[![Build Status](https://github.com/ProductPlan/activerecord-batch_touching/actions/workflows/ruby-tests.yml/badge.svg?branch=main)](https://github.com/ProductPlan/activerecord-batch_touching/actions)
+[![Maintainability](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/maintainability)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/fe8338b7307fb5044f40/test_coverage)](https://codeclimate.com/github/ProductPlan/activerecord-batch_touching/test_coverage)
  
 Batch up your ActiveRecord "touch" operations for better performance.
 
@@ -128,7 +128,7 @@ It keeps doing this until there are no more touches, or until the sun swallows u
 
 ## Contributing
 
-1. Fork it ( [https://github.com/irphilli/activerecord-batch_touching/fork](https://github.com/irphilli/activerecord-batch_touching/fork) )
+1. Fork it ( [https://github.com/ProductPlan/activerecord-batch_touching/fork](https://github.com/ProductPlan/activerecord-batch_touching/fork) )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
