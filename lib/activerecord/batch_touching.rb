@@ -22,9 +22,17 @@ module ActiveRecord
     #     Person.first.touch
     #   end
     def transaction(requires_new: nil, isolation: nil, joinable: true, &block)
-      super(requires_new: requires_new, isolation: isolation, joinable: joinable) do
+      result = super(requires_new: requires_new, isolation: isolation, joinable: joinable) do
         BatchTouching.start(requires_new: requires_new, &block)
       end
+
+      if BatchTouching.should_apply_touches?
+        super() do
+          BatchTouching.apply_touches
+        end
+      end
+
+      result
     end
   end
 
@@ -83,12 +91,12 @@ module ActiveRecord
       def start(requires_new:)
         states.push State.new
         yield.tap do
-          apply_touches if states.length == 1
+          gather_touches if states.length == 1
         end
       ensure
         merge_transactions unless $! && requires_new
 
-        # Decrement nesting even if +apply_touches+ raised an error. To ensure the stack of States
+        # Decrement nesting even if +gather_touches+ raised an error. To ensure the stack of States
         # is empty after the top-level transaction exits.
         states.pop
       end
@@ -99,7 +107,33 @@ module ActiveRecord
         states.present? && !disabled?
       end
 
+      def should_apply_touches?
+        batched_touches.present?
+      end
+
+      def apply_touches
+        batched_touches&.each do |(klass, columns), records|
+          records.reject!(&:destroyed?)
+          touch_records klass, columns, records, batched_touches_time
+        end
+
+        reset!
+      end
+
       private
+
+      def reset!
+        Thread.current[:batch_touching_batch] = nil
+        Thread.current[:batch_touching_time] = nil
+      end
+
+      def batched_touches
+        Thread.current[:batch_touching_batch]
+      end
+
+      def batched_touches_time
+        Thread.current[:batch_touching_time]
+      end
 
       def states
         Thread.current[:batch_touching_states] ||= []
@@ -115,8 +149,8 @@ module ActiveRecord
         states[-2].merge!(current_state) if states.length > 1
       end
 
-      # Apply the touches that were batched. We're in a transaction already so there's no need to open one.
-      def apply_touches
+      # Gather all the touches that were batched.
+      def gather_touches
         current_time = ActiveRecord::Base.current_time_from_proper_timezone
         already_touched = Set.new
         all_states = State.new
@@ -131,10 +165,10 @@ module ActiveRecord
 
         # Sort by class name. Having a consistent order can help mitigate deadlocks.
         sorted_records = all_states.records.keys.sort_by { |k| k.first.name }.to_h { |k| [k, all_states.records[k]] }
-        sorted_records.each do |(klass, columns), records|
-          records.reject!(&:destroyed?)
-          touch_records klass, columns, records, current_time
-        end
+
+        # Save results to a thread so that we can reference these later in their own transaction.
+        Thread.current[:batch_touching_batch] = sorted_records
+        Thread.current[:batch_touching_time] = current_time
       end
 
       # Perform DB update to touch records
