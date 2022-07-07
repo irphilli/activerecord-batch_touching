@@ -26,8 +26,10 @@ module ActiveRecord
         BatchTouching.start(requires_new: requires_new, &block)
       end
 
-      super() do
-        BatchTouching.apply_touches
+      if BatchTouching.should_apply_touches?
+        super() do
+          BatchTouching.apply_touches
+        end
       end
 
       result
@@ -105,10 +107,12 @@ module ActiveRecord
         states.present? && !disabled?
       end
 
-      def apply_touches
-        return unless batched_touches.present?
+      def should_apply_touches?
+        batched_touches.present?
+      end
 
-        batched_touches.each do |(klass, columns), records|
+      def apply_touches
+        batched_touches&.each do |(klass, columns), records|
           records.reject!(&:destroyed?)
           touch_records klass, columns, records, batched_touches_time
         end
