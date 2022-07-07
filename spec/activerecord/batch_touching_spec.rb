@@ -358,6 +358,20 @@ describe Activerecord::BatchTouching do
     end
   end
 
+  it "performs expected touches across multiple transactions" do
+    expect_updates [{ "pets" => { ids: pet1 } }, { "owners" => { ids: owner } }] do
+      ActiveRecord::Base.transaction do
+        pet1.touch
+      end
+    end
+
+    expect_updates [{ "pets" => { ids: pet2 } }, { "owners" => { ids: owner } }] do
+      ActiveRecord::Base.transaction do
+        pet2.touch
+      end
+    end
+  end
+
   context "with dependent deletes" do
     let(:post) { Post.create }
     let(:user) { User.create }
