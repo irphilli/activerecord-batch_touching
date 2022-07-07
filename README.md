@@ -65,7 +65,7 @@ class Pet < ActiveRecord::Base
 end
 ```
 ### Deadlock Prevention
-`batch_touching` will sort the consolidated SQL updates by model name. The predictable order for updates should help mitigate potential database deadlocking.
+`batch_touching` will sort the consolidated SQL updates by model name, and then commit touches in their own transaction. The separate transaction in a predictable order for updates should help mitigate potential database deadlocking.
 
 For example, if two transactions happen to touch records in the following order, there is a potential for a deadlock:
 
