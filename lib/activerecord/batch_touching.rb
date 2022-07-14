@@ -178,7 +178,8 @@ module ActiveRecord
         sql = columns.map { |column| "#{klass.connection.quote_column_name(column)} = :time" }.join(", ")
         sql += ", #{klass.locking_column} = #{klass.locking_column} + 1" if klass.locking_enabled?
 
-        klass.unscoped.where(klass.primary_key => records.to_a).update_all([sql, time: time])
+        ids = records.map { |record| record.send(klass.primary_key) }.sort
+        klass.unscoped.where(klass.primary_key => ids).update_all([sql, time: time])
       end
 
       # Set new timestamp in memory, without updating the DB just yet.
