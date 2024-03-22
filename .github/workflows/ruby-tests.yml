@@ -20,7 +20,8 @@ jobs:
       matrix:
         gemfile:
           - activerecord6
-          - activerecord7
+          - activerecord70
+          - activerecord71
         ruby-version:
           - "3.2"
           - "3.1"
@@ -36,9 +37,9 @@ jobs:
         run: bundle install
       - name: Run rubocop
         run: bundle exec rubocop
-        if: matrix.ruby-version == '3.2' && matrix.gemfile == 'activerecord7'
+        if: matrix.ruby-version == '3.2' && matrix.gemfile == 'activerecord71'
       - name: Run tests
         run: bundle exec rspec
       - name: Upload Coverage
         uses: paambaati/codeclimate-action@v3.0.0
-        if: matrix.ruby-version == '3.2' && matrix.gemfile == 'activerecord7'
+        if: matrix.ruby-version == '3.2' && matrix.gemfile == 'activerecord71'
