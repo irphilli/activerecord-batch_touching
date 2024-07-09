@@ -4,8 +4,8 @@ require "spec_helper"
 
 describe Activerecord::BatchTouching do
   let!(:owner) { Owner.create name: "Rosey" }
-  let!(:pet1) { Pet.create(name: "Bones", owner: owner) }
-  let!(:pet2) { Pet.create(name: "Ema", owner: owner) }
+  let!(:pet1) { Pet.create(name: "Bones", owner:) }
+  let!(:pet2) { Pet.create(name: "Ema", owner:) }
   let!(:car) { Car.create(name: "Ferrari", lock_version: 1) }
 
   it "has a version number" do
@@ -375,7 +375,7 @@ describe Activerecord::BatchTouching do
   context "with dependent deletes" do
     let(:post) { Post.create }
     let(:user) { User.create }
-    let(:comment) { Comment.create(post: post, user: user) }
+    let(:comment) { Comment.create(post:, user:) }
 
     it "does not attempt to touch deleted records" do
       expect do
