@@ -8,10 +8,10 @@ Gem::Specification.new do |spec|
   spec.name          = "activerecord-batch_touching"
   spec.version       = Activerecord::BatchTouching::VERSION
   spec.authors       = ["Brian Morearty", "Phil Phillips"]
-  spec.email         = ["phil@productplan.com"]
+  spec.email         = ["irving.phillips@gmail.com"]
   spec.summary       = 'Batch up your ActiveRecord "touch" operations for better performance.'
   spec.description   = 'Batch up your ActiveRecord "touch" operations for better performance. All accumulated "touch" calls will be consolidated into as few database round trips as possible.'
-  spec.homepage      = "https://github.com/ProductPlan/activerecord-batch_touching"
+  spec.homepage      = "https://github.com/irphilli/activerecord-batch_touching"
   spec.license       = "MIT"
 
   spec.files         = Dir["LICENSE", "README", "lib/**/*"]
