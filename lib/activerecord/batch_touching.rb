@@ -22,8 +22,8 @@ module ActiveRecord
     #     Person.first.touch
     #   end
     def transaction(requires_new: nil, isolation: nil, joinable: true, &block)
-      result = super(requires_new: requires_new, isolation: isolation, joinable: joinable) do
-        BatchTouching.start(requires_new: requires_new, &block)
+      result = super(requires_new:, isolation:, joinable:) do
+        BatchTouching.start(requires_new:, &block)
       end
 
       if BatchTouching.should_apply_touches?
@@ -179,7 +179,7 @@ module ActiveRecord
         sql += ", #{klass.locking_column} = #{klass.locking_column} + 1" if klass.locking_enabled?
 
         ids = records.map { |record| record.send(klass.primary_key) }.sort
-        klass.unscoped.where(klass.primary_key => ids).update_all([sql, time: time])
+        klass.unscoped.where(klass.primary_key => ids).update_all([sql, time:])
       end
 
       # Set new timestamp in memory, without updating the DB just yet.
